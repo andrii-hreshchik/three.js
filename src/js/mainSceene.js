@@ -1,14 +1,20 @@
 let scene = new THREE.Scene();
 let clock = new THREE.Clock();
 let renderer = new THREE.WebGLRenderer();
-let stats, container, mixer, light, controls;
-let camera;
+let imageLoader = new THREE.ImageLoader();
+let modelLoader = new THREE.FBXLoader();
+
+let stats, container, mixer, light, controls, camera;
 
 init();
 loadModels();
 animate();
 
 function init() {
+    initCamera();
+    initLight();
+    initBackground();
+    initOrbitControls();
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -17,16 +23,28 @@ function init() {
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
+    stats = new Stats();
+    container.appendChild(stats.dom);
+}
 
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(100, 200, 300);
+function loadModels() {
+    loadCat();
+    loadBottle();
+}
 
-    controls = new THREE.OrbitControls(camera);
-    controls.target.set(0, 100, 0);
-    controls.update();
 
-    scene.background = new THREE.Color(0xa0a0a0);
+function animate() {
+    requestAnimationFrame(animate);
+    let delta = clock.getDelta();
+    if (mixer) mixer.update(delta);
 
+    renderer.render(scene, camera);
+
+    stats.update();
+}
+
+
+function initLight() {
     light = new THREE.HemisphereLight(0xffffff, 0x444444);
     light.position.set(0, 200, 0);
     scene.add(light);
@@ -39,27 +57,39 @@ function init() {
     light.shadow.camera.left = -120;
     light.shadow.camera.right = 120;
     scene.add(light);
+}
+
+function initCamera() {
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(100, 200, 300);
+}
+
+function initBackground() {
+    scene.background = new THREE.Color(0xa0a0a0);
 
     let mesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(2000, 2000), new THREE.MeshPhongMaterial({color: 0x999999, depthWrite: false}));
     mesh.rotation.x = -Math.PI / 2;
     mesh.receiveShadow = true;
     scene.add(mesh);
 
-    let grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+    let grid = new THREE.GridHelper(2000, 100, 0x000000, 0x000000);
     grid.material.opacity = 0.2;
     grid.material.transparent = true;
     scene.add(grid);
-
-    stats = new Stats();
-    container.appendChild(stats.dom);
 }
 
-function loadModels() {
+function initOrbitControls() {
+    controls = new THREE.OrbitControls(camera);
+    controls.target.set(0, 100, 0);
+    controls.update();
+}
 
-    let textureLoader = new THREE.TextureLoader();
-    let modelLoader = new THREE.FBXLoader();
-
-    let catTexture = textureLoader.load('textures/Joven_AlbedoTransparency.png');
+function loadCat() {
+    let catTexture = new THREE.Texture();
+    imageLoader.load('textures/Joven_AlbedoTransparency.png', (image) => {
+        catTexture.image = image;
+        catTexture.needsUpdate = true;
+    });
 
     modelLoader.load('models/Joven_Animations.fbx', (model) => {
         mixer = new THREE.AnimationMixer(model);
@@ -73,37 +103,39 @@ function loadModels() {
                 child.material.needsUpdate = true;
             }
         });
-         scene.add(model);
+
+        model.position.z = -63;
+
+        scene.add(model);
+
     });
-
-
-    let bottleTexture = textureLoader.load('textures/BottleSticker.png');
-
-    modelLoader.load('models/Bottle.fbx', (model) => {
-        let scaleVector = new THREE.Vector3(5, 5, 5);
-        let scale = Object.assign({}, scaleVector);
-        model.scale.set(scale.x, scale.y, scale.z);
-        model.traverse((child) => {
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.recieveShadow = true;
-                child.material.map = bottleTexture;
-                child.material.needsUpdate = true;
-            }
-        });
-
-        //scene.add(model);
-    });
-
 }
 
+function loadBottle() {
+    let bottleTexture = new THREE.Texture();
+    imageLoader.load('textures/BottleSticker.png', (image) => {
+        bottleTexture.image = image;
+        bottleTexture.needsUpdate = true;
+    });
 
-function animate() {
-    requestAnimationFrame(animate);
-    let delta = clock.getDelta();
-    if (mixer) mixer.update(delta);
+    modelLoader.load('models/Bottle.fbx', (model) => {
+        model.traverse((child) => {
+                if (child.isMesh) {
+                    if (child.name === 'StickerNew') {
+                        child.material.map = bottleTexture;
+                    }
+                    child.castShadow = true;
+                    child.recieveShadow = true;
+                    child.material.needsUpdate = true;
+                }
+            }
+        );
 
-    renderer.render(scene, camera);
+        let scaleVector = new THREE.Vector3(8, 8, 8);
+        let scale = Object.assign({}, scaleVector);
+        model.scale.set(scale.x, scale.y, scale.z);
+        model.rotation.y = 0;
 
-    stats.update();
+        scene.add(model);
+    });
 }
