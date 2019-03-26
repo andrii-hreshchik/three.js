@@ -153,7 +153,7 @@ THREE.FBXLoader = ( function () {
 
 		},
 
-		// Parses FBXTree.Connections which holds parent-child connections between objects (e.g. material -> texture, model->geometry )
+		// Parses FBXTree.Connections which holds parent-child connections between objects (e.g. ballMaterial -> texture, model->geometry )
 		// and details the connection type
 		parseConnections: function () {
 
@@ -498,7 +498,7 @@ THREE.FBXLoader = ( function () {
 					material = new THREE.MeshLambertMaterial();
 					break;
 				default:
-					console.warn( 'THREE.FBXLoader: unknown material type "%s". Defaulting to MeshPhongMaterial.', type );
+					console.warn( 'THREE.FBXLoader: unknown ballMaterial type "%s". Defaulting to MeshPhongMaterial.', type );
 					material = new THREE.MeshPhongMaterial();
 					break;
 
@@ -511,8 +511,8 @@ THREE.FBXLoader = ( function () {
 
 		},
 
-		// Parse FBX material and return parameters suitable for a mainScenee.js material
-		// Also parse the texture map and return any textures associated with the material
+		// Parse FBX ballMaterial and return parameters suitable for a mainScenee.js ballMaterial
+		// Also parse the texture map and return any textures associated with the ballMaterial
 		parseParameters: function ( materialNode, textureMap, ID ) {
 
 			var parameters = {};
@@ -654,7 +654,7 @@ THREE.FBXLoader = ( function () {
 
 		},
 
-		// get a texture from the textureMap for use by a material.
+		// get a texture from the textureMap for use by a ballMaterial.
 		getTexture: function ( textureMap, id ) {
 
 			// if the texture is a layered texture, just use the first layer and issue a warning
@@ -1471,7 +1471,7 @@ THREE.FBXLoader = ( function () {
 			var uuid = child.uuid;
 			var matUuid = material.uuid;
 
-			// if a geometry has morph targets, it cannot share the material with other geometries
+			// if a geometry has morph targets, it cannot share the ballMaterial with other geometries
 			var sharedMat = false;
 
 			sceneGraph.traverse( function ( node ) {
@@ -1665,7 +1665,7 @@ THREE.FBXLoader = ( function () {
 
 			if ( geoInfo.material && geoInfo.material.mappingType !== 'AllSame' ) {
 
-				// Convert the material indices of each vertex into rendering groups on the geometry.
+				// Convert the ballMaterial indices of each vertex into rendering groups on the geometry.
 				var prevMaterialIndex = buffers.materialIndex[ 0 ];
 				var startIndex = 0;
 
@@ -2224,7 +2224,7 @@ THREE.FBXLoader = ( function () {
 
 		},
 
-		// Parse mapping and material data in FBXTree.Objects.Geometry.LayerElementMaterial if it exists
+		// Parse mapping and ballMaterial data in FBXTree.Objects.Geometry.LayerElementMaterial if it exists
 		parseMaterialIndices: function ( MaterialNode ) {
 
 			var mappingType = MaterialNode.MappingInformationType;

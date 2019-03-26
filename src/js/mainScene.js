@@ -6,12 +6,14 @@ let modelLoader = new THREE.FBXLoader();
 
 let stats, container, mixer, light, controls, camera;
 
+let cubeCamera, pivot1, Ball1;
+
 init();
 loadModels();
 animate();
 
 function init() {
-    initCamera();
+    initCameras();
     initLight();
     initBackground();
     initOrbitControls();
@@ -28,15 +30,18 @@ function init() {
 }
 
 function loadModels() {
-    loadCat();
+    // loadCat();
     loadBottle();
-}
+    loadSamba();
 
+}
 
 function animate() {
     requestAnimationFrame(animate);
     let delta = clock.getDelta();
     if (mixer) mixer.update(delta);
+
+    cubeCamera.update(renderer, scene);
 
     renderer.render(scene, camera);
 
@@ -59,9 +64,12 @@ function initLight() {
     scene.add(light);
 }
 
-function initCamera() {
+function initCameras() {
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
     camera.position.set(100, 200, 300);
+
+    //for bottle reflection
+    cubeCamera = new THREE.CubeCamera(1, 1000, 128);
 }
 
 function initBackground() {
@@ -92,9 +100,6 @@ function loadCat() {
     });
 
     modelLoader.load('models/Joven_Animations.fbx', (model) => {
-        mixer = new THREE.AnimationMixer(model);
-        let action = mixer.clipAction(model.animations[0]);
-        action.play();
         model.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
@@ -103,8 +108,11 @@ function loadCat() {
                 child.material.needsUpdate = true;
             }
         });
-
         model.position.z = -63;
+
+        mixer = new THREE.AnimationMixer(model);
+        let action = mixer.clipAction(model.animations[0]);
+        action.play();
 
         scene.add(model);
 
@@ -112,18 +120,28 @@ function loadCat() {
 }
 
 function loadBottle() {
-    let bottleTexture = new THREE.Texture();
+    let glassMaterial = new THREE.MeshPhongMaterial({
+        shininess: 100,
+        color: 0xffffff,
+        specular: 0xffffff,
+        envMap: cubeCamera.renderTarget.texture,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        refractionRatio: 0.98,
+        reflectivity: 0.9
+    });
+
+    let stickerTexture = new THREE.Texture();
     imageLoader.load('textures/BottleSticker.png', (image) => {
-        bottleTexture.image = image;
-        bottleTexture.needsUpdate = true;
+        stickerTexture.image = image;
+        stickerTexture.needsUpdate = true;
     });
 
     modelLoader.load('models/Bottle.fbx', (model) => {
         model.traverse((child) => {
                 if (child.isMesh) {
-                    if (child.name === 'StickerNew') {
-                        child.material.map = bottleTexture;
-                    }
+                    child.name === 'StickerNew' ? child.material.map = stickerTexture : child.material = glassMaterial;
                     child.castShadow = true;
                     child.recieveShadow = true;
                     child.material.needsUpdate = true;
@@ -135,6 +153,29 @@ function loadBottle() {
         let scale = Object.assign({}, scaleVector);
         model.scale.set(scale.x, scale.y, scale.z);
         model.rotation.y = 0;
+        model.add(cubeCamera);
+
+        scene.add(model);
+    });
+}
+
+function loadSamba() {
+    modelLoader.load('models/Samba Dancing.fbx', (model) => {
+        model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.recieveShadow = true;
+                    child.material.needsUpdate = true;
+                }
+            }
+        );
+        model.position.z = +120;
+        model.rotation.y = Math.PI;
+        // model.scale.setScalar();
+
+        mixer = new THREE.AnimationMixer(model);
+        let action = mixer.clipAction(model.animations[0]);
+        action.play();
 
         scene.add(model);
     });

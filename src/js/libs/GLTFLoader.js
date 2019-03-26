@@ -701,10 +701,10 @@ THREE.GLTFLoader = ( function () {
 				].join( '\n' );
 
 				var lightPhysicalFragmentChunk = [
-					'PhysicalMaterial material;',
-					'material.diffuseColor = diffuseColor.rgb;',
-					'material.specularRoughness = clamp( 1.0 - glossinessFactor, 0.04, 1.0 );',
-					'material.specularColor = specularFactor.rgb;',
+					'PhysicalMaterial ballMaterial;',
+					'ballMaterial.diffuseColor = diffuseColor.rgb;',
+					'ballMaterial.specularRoughness = clamp( 1.0 - glossinessFactor, 0.04, 1.0 );',
+					'ballMaterial.specularColor = specularFactor.rgb;',
 				].join( '\n' );
 
 				var fragmentShader = shader.fragmentShader
@@ -775,7 +775,7 @@ THREE.GLTFLoader = ( function () {
 
 			createMaterial: function ( params ) {
 
-				// setup material properties based on MeshStandardMaterial for Specular-Glossiness
+				// setup ballMaterial properties based on MeshStandardMaterial for Specular-Glossiness
 
 				var material = new THREE.ShaderMaterial( {
 					defines: params.defines,
@@ -1821,7 +1821,7 @@ THREE.GLTFLoader = ( function () {
 					dependency = this.loadBuffer( index );
 					break;
 
-				case 'material':
+				case 'ballMaterial':
 					dependency = this.loadMaterial( index );
 					break;
 
@@ -2210,7 +2210,7 @@ THREE.GLTFLoader = ( function () {
 	};
 
 	/**
-	 * Asynchronously assigns a texture to the given material parameters.
+	 * Asynchronously assigns a texture to the given ballMaterial parameters.
 	 * @param {Object} materialParams
 	 * @param {string} mapName
 	 * @param {Object} mapDef
@@ -2672,7 +2672,7 @@ THREE.GLTFLoader = ( function () {
 
 			var material = primitives[ i ].material === undefined
 				? createDefaultMaterial()
-				: this.getDependency( 'material', primitives[ i ].material );
+				: this.getDependency( 'ballMaterial', primitives[ i ].material );
 
 			pending.push( material );
 
@@ -2811,7 +2811,7 @@ THREE.GLTFLoader = ( function () {
 
 						}
 
-						// Clone the material if it will be modified
+						// Clone the ballMaterial if it will be modified
 						if ( useVertexTangents || useVertexColors || useFlatShading || useSkinning || useMorphTargets ) {
 
 							var cacheKey = 'ClonedMaterial:' + material.uuid + ':';
