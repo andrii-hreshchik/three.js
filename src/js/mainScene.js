@@ -120,16 +120,15 @@ function loadCat() {
 }
 
 function loadBottle() {
-    let glassMaterial = new THREE.MeshPhongMaterial({
-        shininess: 100,
+    let glassMaterial = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        specular: 0xffffff,
-        envMap: cubeCamera.renderTarget.texture,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        refractionRatio: 0.98,
-        reflectivity: 0.9
+       // envMap: cubeCamera1.renderTarget.texture,
+        //  map: texture,
+        metalness: 1,
+        roughness: 0,
+        opacity: 1,
+        // transparent: true,
+        premultipliedAlpha: true,
     });
 
     let stickerTexture = new THREE.Texture();

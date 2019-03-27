@@ -47,7 +47,8 @@ function init() {
         shininess: 80,
         color: 0xffffff,
         specular: 0xffffff,
-        map: texture
+        map: texture,
+        receiveShadow: true
     });
 
     var planeGeometry = new THREE.PlaneBufferGeometry(100, 100);
@@ -56,14 +57,13 @@ function init() {
     //ground.position.set(0, 0, 0);
     ground.rotation.x = -Math.PI / 2;
     ground.scale.set(20, 20, 20);
-    ground.receiveShadow = true;
     scene.add(ground);
 
     pivot1 = new THREE.Object3D();
     scene.add(pivot1);
 
     texture2 = new THREE.Texture();
-    imageLoader.load('textures/istockphoto-696307908-612x612.jpg', (image) => {
+    imageLoader.load('textures/FFFFFF-0.6.png', (image) => {
         texture2.image = image;
         texture2.needsUpdate = true;
     });
@@ -72,7 +72,7 @@ function init() {
         shininess: 100,
         color: 0xffffff,
         specular: 0xffffff,
-        envMap: cubeCamera1.renderTarget,
+        envMap: cubeCamera1.renderTarget.texture,
         transparent: false,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
@@ -81,13 +81,14 @@ function init() {
     });
 
     carGlassMaterial = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        envMap: texture2,
+        // color: 0xffffff,
+        envMap: cubeCamera1.renderTarget.texture,
+        map: texture2,
         metalness: 1,
         roughness: 0,
-        opacity: 0.2,
-        transparent: true,
-        premultipliedAlpha: true,
+        opacity: 0.8,
+        // transparent: true,
+       premultipliedAlpha: true,
     });
 
     geometry = new THREE.SphereGeometry(100, 16, 16);
@@ -193,7 +194,7 @@ function loadBottle() {
     modelLoader.load('models/Bottle.fbx', (model) => {
         model.traverse((child) => {
                 if (child.isMesh) {
-                    child.name === 'StickerNew' ? child.material.map = bottleTexture : child.material = ballMaterial;
+                    child.name === 'StickerNew' ? child.material.map = bottleTexture : child.material = carGlassMaterial;
                     child.castShadow = true;
                     child.recieveShadow = true;
                     child.material.needsUpdate = true;
